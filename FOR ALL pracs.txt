@@ -1,0 +1,379 @@
+FOR ALL pracs (Command)
+1. SUDO apt-get update
+2. SUDO apt-get upgrade
+3. git clone https://github.com/you-can-access-it/iot.git
+
+LED prac1 steps
+1. take one wire from negative(bread board) to 39(GND) or 6(GND) on raspberry PI
+2. then one led --> Shorter end in negative and longer end in positive --> resistor beside the led and wire beside resistor --> wire will go to 29 (GPIO 5)
+3. Same steps for more 2 LEDs --> wire goes to 31 (GPIO 6) 33 (GPIO 13) 35 (GPIO 19)
+
+Code:
+from gpiozero import LED
+import time
+l1 = LED(20)#pi pin 38
+l2 = LED(21)#pi pin 40
+l3 = LED(17)#pi pin 11
+l1.on()
+time.sleep(1)
+l1.off()
+l2.on()
+time.sleep(2)
+l3.on()
+time.sleep(5)
+l2.off()
+l3.off()
+
+7 Segment Steps
+1. In 7 Segment you will have GND VCC DIO CLK
+Go to terminal --> pip3 install raspberrypi-tm1637
+2. GND connects to 6 on Raspiberry PI
+3. VCC connects on 2 Raspiberry PI
+4. CLK connects on 38 Raspiberry PI
+5. DIO connects on 40 Raspiberry PI
+
+Code:
+#pip3 install raspberrypi-tm1637
+# gnd = pi pin 6
+# vcc = pi pin 1/2
+# clk = pi pin 40
+# dio = pi pin 38
+from time import sleep
+import tm1637
+import time
+Display = tm1637.TM1637(21, 20)  # Set the clock and data pins
+Display.brightness(1)  # Set brightness to max (optional)
+try:
+    print("Starting simple clock (press CTRL + C to stop):")
+    while True:
+        current_time = time.strftime("%H%M")  # Get the current time as HHMM
+        Display.show(current_time)  # Show the current time on the display
+        sleep(1)
+except KeyboardInterrupt:
+    print("\nStopped by user")
+
+Telegram Steps
+1. take one wire from negative(bread board) to 39(GND) or 6(GND) on raspberry PI
+2. then one led --> Shorter end in negative and longer end in positive --> resistor beside the led and wire beside resistor --> wire will go to 40 (GPIO 21)
+3. Ask Mam for Telegram bot ID
+4. put the id in code
+5. run
+
+Code:
+'''
+Prac3: Controlling LED with telegram
++-----------+----------------------+-------------+
+| Board Pin | Physical PIN Number  | GPIO Number |
++-----------+----------------------+-------------+
+| GPIO      | 40                   | GPIO 21     |
+| GND       | 6                    | GROUND      |
++-----------+----------------------+-------------+
+Step to get bot on Telegram app:
+1:  Download Telegram on your mobile phone.
+2: Install Telegram.
+2: Open Telegram app in your system or mobile
+3: Click On Start Messaging Button
+4: Enter your mobile number to register with the telegram service.
+5: Search for name "BotFather"
+6: Click on "BotFather
+7: To Start "BotFather" type /start in message
+8: Now type /newbot in message  . and then give the name to your BOT and Username also.
+Commands to Run on the terminal
+sudo apt-get install python-pip
+sudo pip install telepot
+or
+sudo pip install telepot --break-system-package
+
+Code:
+'''
+# sudo apt-get upgrade
+# sudo apt-get update
+# sudo apt-get install python-pip
+# sudo pip install telepot
+import time
+import telepot
+import RPi.GPIO as GPIO
+from telepot.loop import MessageLoop
+LED_PIN = 40  # Pin 40 = GPIO21
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+GPIO.setup(LED_PIN, GPIO.OUT)
+GPIO.output(LED_PIN, 0)
+def action(msg):
+    chat_id = msg['chat']['id']
+    command = msg['text']
+    print('Got command:', command)
+    if 'On' in command or 'on' in command:
+        GPIO.output(LED_PIN, 1)
+        bot.sendMessage(chat_id, "LED turned ON")
+    elif 'Off' in command or 'off' in command:
+        GPIO.output(LED_PIN, 0)
+        bot.sendMessage(chat_id, "LED turned OFF")
+    else:
+        bot.sendMessage(chat_id, "Send 'on' or 'off' to control the LED.")
+# Insert your bot token here
+bot = telepot.Bot('8525402981:AAFr16Wb7JhM248YgFV2hyt2KDIlgtQ4ETQ')
+MessageLoop(bot, action).run_as_thread()
+print('Listening for commands...')
+while True:
+    time.sleep(10)
+
+Prac4: PI Camera Steps
+Commands to be run on the terminal:
+sudo raspi-config - # for configuring interface I2C
+Interface -> enable Camera
+reboot
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt install python3-picamera
+Create a folder named /home/pi/images
+Blue side of camera module goes on the USB side and white on other side
+run
+
+Code:
+'''
+Prac4: PI Camera 
+Commands to be run on the terminal:
+sudo raspi-config  - # for configuring interface I2C
+Interface -> enable Camera
+reboot
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt install python3-picamera
+'''
+#Code for images:
+from picamera import PiCamera
+import datetime,os
+os.makedirs('/home/pi/images',exist_ok=True)
+camera=PiCamera()
+camera.resolution=(1024,768)
+camera.capture("{}/image_{}.jpg".format('/home/pi/images',datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+#Code for Video:
+from picamera import PiCamera
+from time import sleep
+import datetime,os,subprocess
+os.makedirs('/home/pi/videos',exist_ok=True)
+camera=PiCamera();camera.resolution=(1024,768)
+ts=datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+video_h264="/home/pi/videos/video_{}.h264".format(ts)
+camera.start_recording(video_h264);sleep(10);camera.stop_recording()
+subprocess.run(["MP4Box","-add",video_h264,"/home/pi/videos/video_{}.mp4".format(ts)],check=True);os.remove(video_h264)
+
+Motor Driver Steps
+1. Connect A1 from motor Driver to 11 from RaspBerry PI
+2. A2 from Motor driver to 13 from Raspberry PI
+3. EA from Motor Driver to positive 6 on Breadboard
+4. VCC from motor driver to next positive after EA on breadboard
+5. GND to negative on the other side of Ea on breadboard
+6. Raspi VCC pin no 2 or 1 (any one will work) to positive on breadboard
+7. Raspi GND pin no 6 to negative on breadboard
+
+Code:
+import RPi.GPIO as GPIO
+import time
+# Your pins
+# EA to BB+
+# VCC to BB+
+# pi pin 2 to BB+
+# gnd to BB- /PI pin 6 (either direct ot througn breadboard)
+MOTOR_PIN1 = 17  # Clockwise ; pi pin 11 to A1
+MOTOR_PIN2 = 27  # Anti-clockwise; pi pin 13 to A2
+# Setup
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(MOTOR_PIN1, GPIO.OUT)
+GPIO.setup(MOTOR_PIN2, GPIO.OUT)
+# Initial stop
+GPIO.output(MOTOR_PIN1, GPIO.LOW)
+GPIO.output(MOTOR_PIN2, GPIO.LOW)
+
+def clockwise(duration=2):
+    print(">>> CLOCKWISE")
+    GPIO.output(MOTOR_PIN1, GPIO.HIGH)
+    GPIO.output(MOTOR_PIN2, GPIO.LOW)
+    time.sleep(duration)
+
+def anticlockwise(duration=2):
+    print(">>> ANTICLOCKWISE")
+    GPIO.output(MOTOR_PIN1, GPIO.LOW)
+    GPIO.output(MOTOR_PIN2, GPIO.HIGH)
+    time.sleep(duration)
+
+def stop(duration=1):
+    print(">>> STOP")
+    GPIO.output(MOTOR_PIN1, GPIO.LOW)
+    GPIO.output(MOTOR_PIN2, GPIO.LOW)
+    time.sleep(duration)
+
+# Demo sequence
+try:
+    print("DC motor Demo starting....")
+    for i in range(3):
+        clockwise(1.5)
+        stop(0.5)
+        anticlockwise(1.5)
+        stop(1)
+    print("Demo complete")
+except KeyboardInterrupt:
+    print("\nStopped by user")
+finally:
+    GPIO.output(MOTOR_PIN1, GPIO.LOW)
+    GPIO.output(MOTOR_PIN2, GPIO.LOW)
+    GPIO.cleanup()
+    print("GPIO cleaned up")
+
+RFID Steps
+1. RFID TX → Raspberry Pi Pin 10 (GPIO15)
+2. RFID VCC → Raspberry Pi Pin 2 (5V)
+3. RFID GND → Raspberry Pi Pin 6 (Ground)
+4. Sudo raspi-config
+serial port -> login shell NO -> Hardware YES
+5. pip3 install pyserial
+6. Scan the card -> you will get an ID -> use that ID in the code -> run and check the card
+
+Code (Checking)
+# (Board TX) Physical PIN 10    GPIO 15
+# (Board VCC) Physical PIN 2    GPIO 3
+# (Board GND) Physical PIN 6    GPIO 6
+import serial,time
+ser=serial.Serial('/dev/serial0',9600,timeout=1)
+AUTHORIZED_CARD="400034E6E97B"
+print("RFID Access System Ready")
+print("Tap your card...")
+try:
+    while True:
+        data=ser.read(12)
+        if data:
+            card_id=data.decode('utf-8').strip()
+            print("Card Detected: "+card_id)
+            if card_id==AUTHORIZED_CARD:
+                print(" Access Granted — Hello!")
+            else:
+                print(" Access Denied — Nah!")
+            time.sleep(1)
+except KeyboardInterrupt:
+    print("\nExiting program...")
+finally:
+    ser.close()
+Code: (Main one)
+# sudo apt-get update
+# sudo apt-get upgrade
+# sudo raspi-config (interface >serial port >disable powershell log in >enable hardware interface >exit)
+# reboot
+# pip3 install pyserial
+# (Board TX) Physical PIN 10    GPIO 15
+# (Board VCC) Physical PIN 2    GPIO 3
+# (Board GND) Physical PIN 6    GPIO 6
+import serial
+ser = serial.Serial('/dev/serial0', 9600, timeout=1)
+print("Scan your card.....")
+while True:
+    data = ser.read(12)
+    if data:
+        print(data.decode('utf-8').strip())
+#400034E6E97B
+
+GPS Steps
+TX → RX
+RX → TX
+VCC → 5V
+GND → GND
+4. Sudo raspi-config
+serial port -> login shell NO -> Hardware YES
+5. pip3 install pyserial
+6. Run
+
+Code:
+#cross conection using usb module8
+# Gnd = Gnd
+# Vcc = 5 volt
+# RX= TX
+# TX = RX
+import serial
+def parse_GPGGA(sentence):
+    try:
+        parts = sentence.split(',')
+        if parts[0] == "$GPGGA" and len(parts) > 5:
+            lat = parts[1]
+            lat_dir = parts[2]
+            lon = parts[3]
+            lon_dir = parts[4]
+            if lat and lon and lat_dir and lon_dir:
+                lat_deg = int(float(lat) / 100)
+                lat_min = float(lat) - lat_deg * 100
+                latitude = lat_deg + lat_min / 60
+                if lat_dir == 'S':
+                    latitude = -latitude
+                lon_deg = int(float(lon) / 100)
+                lon_min = float(lon) - lon_deg * 100
+                longitude = lon_deg + lon_min / 60
+                if lon_dir == 'W':
+                    longitude = -longitude
+                return latitude, longitude
+    except Exception:
+        pass
+    return None, None
+# Initialize serial connection here!
+ser = serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=1)
+while True:
+    line = ser.readline()
+    try:
+        line = line.decode('ascii', errors='replace')
+    except AttributeError:
+        pass
+    print("Received line:", line.strip())
+    if line.startswith('$GPGGA'):
+        lat, lon = parse_GPGGA(line)
+        if lat and lon:
+            print("Latitude: %.6f, Longitude: %.6f" % (lat, lon))
+        else:
+            print("Invalid or no GPS fix yet.")
+
+Fingerprint Steps
+#Gpio readall
+#usb to finger cross-connetion
+#sudo apt-get update
+#sudo apt-get upgrade
+#sudo pip3 install pyfingerprint
+#sudo usermod -a -G dialout $USER
+#sudo reboot
+# Vcc = vcc
+# Gnd=gnd
+# Rxd = txd
+# Txd = rxd
+
+Code:
+#usb to finger cross-connection
+#sudo apt-get update
+#sudo apt-get upgrade
+#sudo pip3 install pyfingerprint
+#sudo usermod -a -G dialout $USER
+#sudo reboot
+# Vcc = vcc
+# Gnd=gnd
+# Rxd = txd
+# Txd = rxd
+from pyfingerprint.pyfingerprint import PyFingerprint
+import time
+f = PyFingerprint('/dev/ttyUSB0', 57600, 0xFFFFFFFF, 0x00000000)
+if not f.verifyPassword(): exit("Wrong password!")
+def enroll():
+    while not f.readImage(): pass
+    f.convertImage(0x01)
+    if f.searchTemplate()[0] >= 0: print("Already enrolled!"); return
+    time.sleep(2)
+    while not f.readImage(): pass
+    f.convertImage(0x02)
+    if f.compareCharacteristics():
+        print("Enrolled at #", f.storeTemplate())
+    else: print("No match!")
+def search():
+    while not f.readImage(): pass
+    f.convertImage(0x01)
+    pos = f.searchTemplate()[0]
+    print("Access granted #" if pos>=0 else "Access denied!", pos)
+while True:
+    c = input("E/S/Q: ").lower()
+    if c == 'q': break
+    if c == 'e': enroll()
+    if c == 's': search()
